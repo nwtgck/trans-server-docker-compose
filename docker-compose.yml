@@ -1,0 +1,33 @@
+version: '3.1'
+services:
+  https-portal:
+    image: steveltn/https-portal:1.3.0
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - trans
+    restart: always
+    env_file: https-portal.env
+    volumes:
+      - ./docker_volumes/ssl_certs:/var/lib/https-portal
+
+  trans:
+    image: nwtgck/trans-server-akka:v1.17.0
+    depends_on:
+      - db
+    restart: always
+    expose:
+      - "80"
+    command: --db-url="jdbc:h2:tcp://db//h2db/trans"
+    volumes:
+      - ./docker_volumes/trans-db:/trans/db
+
+  db:
+    image: nwtgck/h2database:v1.4.197
+    restart: always
+    command: -tcpAllowOthers -webAllowOthers
+    ports:
+      - 8082:8082
+    volumes:
+      - ./docker_volumes/h2db:/h2db
